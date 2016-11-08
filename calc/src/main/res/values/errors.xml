@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="division_zero">На ноль делить нельзя!</string>
+    <string name="expression_wrong">Выражение неверно!\nВведите корректное выражение.</string>
+    <string name="expression_error">Ошибка при вычислении выражения!\nВозможно, введенное выражение некорректно.</string>
+</resources>
