@@ -41,6 +41,13 @@ public class MainActivity extends Activity {
         btnSubtract = (Button) findViewById(R.id.btnSubtract);
         btnPercent = (Button) findViewById(R.id.btnPercent);
 
+        actionTypeStack = (Stack<ActionType>) getLastNonConfigurationInstance();
+        if (actionTypeStack==null){
+            actionTypeStack=new Stack<ActionType>();
+        }else{
+            if (!actionTypeStack.isEmpty())
+                lastAction=actionTypeStack.pop();
+        }
     }
 
     @Override
@@ -70,15 +77,19 @@ public class MainActivity extends Activity {
         toastMessage.setGravity(Gravity.TOP, 0, 100);
         toastMessage.show();
     }
+    public Object onRetainNonConfigurationInstance() {
+        return actionTypeStack;
+    }
+
 
     private ActionType lastAction;
     private Stack<ActionType> actionTypeStack = new Stack<ActionType>();
 
+    private ActionType actionTypeTmp;
+    private Stack<ActionType> actionTypeTmpStack=new Stack<ActionType>();
+
     public void buttonClick(View view) {
 
-        Stack<ActionType> actionTypeTmpStack;
-        actionTypeTmpStack=new Stack<>();
-        ActionType actionTypeTmp;
         switch (view.getId()) {
             case R.id.btnAdd:
             case R.id.btnSubtract:
@@ -92,8 +103,8 @@ public class MainActivity extends Activity {
                         || (lastAction == ActionType.OPEN_BRACKET && view.getId() != R.id.btnSubtract)) {// после "(" запрещаем вводить +,*,/,%
                     break;
                 }
-                else if ( lastAction == ActionType.SUBSTRACT && view.getId() == R.id.btnSubtract // если предыдущая операция - и текущая -, то удаляем предыдущую
-                        || lastAction == ActionType.OPERATION && view.getId() != R.id.btnSubtract) { // если предыдущая операция +,*,/,% и текущая +,*,/,% , то удаляем предыдущую
+                else if ((lastAction == ActionType.SUBSTRACT && view.getId() == R.id.btnSubtract) // если предыдущая операция - и текущая -, то удаляем предыдущую
+                        || (lastAction == ActionType.OPERATION && view.getId() != R.id.btnSubtract)) { // если предыдущая операция +,*,/,% и текущая +,*,/,% , то удаляем предыдущую
                     txtResult.setText(txtResult.getText().delete(
                             txtResult.getText().length() - 1,
                             txtResult.getText().length()) + view.getContentDescription().toString());
@@ -115,9 +126,7 @@ public class MainActivity extends Activity {
             }
 
             case R.id.btnClear: {
-                txtResult.setText("");
-                lastAction = null;
-                actionTypeStack.clear();
+                clearResult();
                 break;
             }
 
@@ -147,6 +156,7 @@ public class MainActivity extends Activity {
 
                 lastAction = ActionType.CALCULATION;
                 actionTypeStack.clear();
+                actionTypeStack.add(lastAction);
                 break;
             }
 
@@ -176,9 +186,9 @@ public class MainActivity extends Activity {
 
             case R.id.btnDelete: {
 
-                if (txtResult.getText().toString().trim().length() == 0) {
-                    txtResult.setText("");
-                    return;
+                if (txtResult.getText().toString().trim().length() == 0 || lastAction == null || lastAction == ActionType.CALCULATION) {
+                    clearResult();
+                    break;
                 }
 
                 txtResult.setText(txtResult.getText().delete(
@@ -241,6 +251,12 @@ public class MainActivity extends Activity {
 
             }
 
+
         }
+    }
+    private void clearResult(){
+        txtResult.setText("");
+        lastAction = null;
+        actionTypeStack.clear();
     }
 }
